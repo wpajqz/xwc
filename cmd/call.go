@@ -19,8 +19,6 @@ func RunCallCommand() *cobra.Command {
 		Short:   "Call command",
 		Aliases: []string{"c"},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cmd.DisableFlagParsing = true
-			cmd.DisableFlagsInUseLine = true
 			c := &config.Config{}
 			if err := c.LoadConfigFile("xwc.yml"); err != nil {
 				return err
@@ -46,6 +44,10 @@ func RunCallCommand() *cobra.Command {
 
 					if len(args) > 1 {
 						param = append(param, args[1:]...)
+					}
+
+					for k, v := range param {
+						param[k] = os.ExpandEnv(v)
 					}
 
 					fmt.Printf("exec: %s %s\n", ss[0], strings.Join(param, " "))
