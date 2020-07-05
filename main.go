@@ -13,7 +13,6 @@ func main() {
 		Short: "wrap some command with enviroment",
 	}
 
-	rootCmd.DisableFlagParsing = true
 	rootCmd.AddCommand(cmd.RunInitCommand())
 	rootCmd.AddCommand(cmd.RunCallCommand())
 

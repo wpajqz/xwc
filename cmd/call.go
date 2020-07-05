@@ -48,14 +48,16 @@ func RunCallCommand() *cobra.Command {
 						param = append(param, args[1:]...)
 					}
 
-					fmt.Printf("exec: %s %s", ss[0], strings.Join(param, " "))
+					fmt.Printf("exec: %s %s\n", ss[0], strings.Join(param, " "))
 
 					var out bytes.Buffer
 					execCmd := exec.Command(ss[0], param...)
 					execCmd.Stdout = &out
+					execCmd.Stderr = &out
 
 					err := execCmd.Run()
 					if err != nil {
+						fmt.Println(out.String())
 						return err
 					}
 
