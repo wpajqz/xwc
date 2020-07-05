@@ -2,16 +2,6 @@ package config
 
 import "testing"
 
-func TestConfig_LoadConfigFile(t *testing.T) {
-	c := &Config{}
-	err := c.LoadConfigFile("xwc.yml")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	t.Log(c.Enviroment, c.Command)
-}
-
 func TestConfig_StoreConfigFile(t *testing.T) {
 	c := &Config{
 		Enviroment: make([]map[string]string, 0),
@@ -25,6 +15,16 @@ func TestConfig_StoreConfigFile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+}
+
+func TestConfig_LoadConfigFile(t *testing.T) {
+	c := &Config{}
+	err := c.LoadConfigFile("xwc.yml")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Log(c.Enviroment, c.Command)
 }
 
 func TestConfig_IsExists(t *testing.T) {
