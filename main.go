@@ -44,42 +44,43 @@ func main() {
 	for _, k := range om.Keys() {
 		v, _ := om.Get(k)
 
-		rootCmd.AddCommand(
-			&cobra.Command{
-				Use:   k.(string),
-				Short: fmt.Sprintf("Exec: %s", v.(string)),
-				Long:  fmt.Sprintf("Exec: %s", v.(string)),
-				Run: func(cmd *cobra.Command, args []string) {
-					var param []string
+		subCmd := &cobra.Command{
+			Use:   k.(string),
+			Short: fmt.Sprintf("Exec: %s", v.(string)),
+			Long:  fmt.Sprintf("Exec: %s", v.(string)),
+			Run: func(cmd *cobra.Command, args []string) {
+				var param []string
 
-					ss := strings.Split(v.(string), " ")
-					if len(ss) > 1 {
-						param = append(param, ss[1:]...)
-					}
+				ss := strings.Split(v.(string), " ")
+				if len(ss) > 1 {
+					param = append(param, ss[1:]...)
+				}
 
-					param = append(param, args...)
+				param = append(param, args...)
 
-					for k, v := range param {
-						param[k] = os.ExpandEnv(v)
-					}
+				for k, v := range param {
+					param[k] = os.ExpandEnv(v)
+				}
 
-					fmt.Printf("exec: %s %s\n", ss[0], strings.Join(param, " "))
+				fmt.Printf("exec: %s %s\n", ss[0], strings.Join(param, " "))
 
-					var ob, eb bytes.Buffer
-					execCmd := exec.Command(ss[0], param...)
-					execCmd.Stdout = &ob
-					execCmd.Stderr = &eb
+				var ob, eb bytes.Buffer
+				execCmd := exec.Command(ss[0], param...)
+				execCmd.Stdout = &ob
+				execCmd.Stderr = &eb
 
-					err := execCmd.Run()
-					if err != nil {
-						fmt.Println(eb.String())
-						return
-					}
+				err := execCmd.Run()
+				if err != nil {
+					fmt.Println(eb.String())
+					return
+				}
 
-					fmt.Println(ob.String())
-				},
+				fmt.Println(ob.String())
 			},
-		)
+		}
+
+		subCmd.DisableFlagParsing = true
+		rootCmd.AddCommand(subCmd)
 	}
 
 	if err := rootCmd.Execute(); err != nil {
