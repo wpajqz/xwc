@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/elliotchance/orderedmap"
 	"github.com/spf13/cobra"
 	"github.com/wpajqz/xwc/cmd"
 	"github.com/wpajqz/xwc/config"
@@ -35,16 +36,23 @@ func main() {
 		}
 	}
 
+	om := orderedmap.NewOrderedMap()
 	for k, v := range c.Command {
+		om.Set(k, v)
+	}
+
+	for _, k := range om.Keys() {
+		v, _ := om.Get(k)
+
 		rootCmd.AddCommand(
 			&cobra.Command{
-				Use:   k,
-				Short: fmt.Sprintf("Exec: %s", v),
-				Long:  fmt.Sprintf("Exec: %s", v),
+				Use:   k.(string),
+				Short: fmt.Sprintf("Exec: %s", v.(string)),
+				Long:  fmt.Sprintf("Exec: %s", v.(string)),
 				Run: func(cmd *cobra.Command, args []string) {
 					var param []string
 
-					ss := strings.Split(v, " ")
+					ss := strings.Split(v.(string), " ")
 					if len(ss) > 1 {
 						param = append(param, ss[1:]...)
 					}
