@@ -1,8 +1,9 @@
 package main
 
 import (
-	"bytes"
+	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"strings"
@@ -49,33 +50,41 @@ func main() {
 			Short: fmt.Sprintf("Exec: %s", v.(string)),
 			Long:  fmt.Sprintf("Exec: %s", v.(string)),
 			Run: func(cmd *cobra.Command, args []string) {
-				var param []string
+				command, param := parseFlag(v.(string), args)
 
-				ss := strings.Split(v.(string), " ")
-				if len(ss) > 1 {
-					param = append(param, ss[1:]...)
-				}
+				fmt.Printf("exec: %s %s\n", command, strings.Join(param, " "))
 
-				param = append(param, args...)
+				execCmd := exec.Command(command, param...)
 
-				for k, v := range param {
-					param[k] = os.ExpandEnv(v)
-				}
-
-				fmt.Printf("exec: %s %s\n", ss[0], strings.Join(param, " "))
-
-				var ob, eb bytes.Buffer
-				execCmd := exec.Command(ss[0], param...)
-				execCmd.Stdout = &ob
-				execCmd.Stderr = &eb
-
-				err := execCmd.Run()
+				stdout, err := execCmd.StdoutPipe()
 				if err != nil {
-					fmt.Println(eb.String())
+					fmt.Println(err.Error())
+					return
+				}
+				defer stdout.Close()
+
+				err = execCmd.Start()
+				if err != nil {
+					fmt.Println(err.Error())
 					return
 				}
 
-				fmt.Println(ob.String())
+				reader := bufio.NewReader(stdout)
+
+				for {
+					line, err := reader.ReadString('\n')
+					if err != nil || err == io.EOF {
+						break
+					}
+
+					fmt.Println(line)
+				}
+
+				if err := execCmd.Wait(); err != nil {
+					fmt.Println(err.Error())
+				}
+
+				return
 			},
 		}
 
@@ -86,4 +95,20 @@ func main() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err.Error())
 	}
+}
+
+// parseFlag 解析命令以及命令所对应的参数
+func parseFlag(flag string, args []string) (command string, param []string) {
+	ss := strings.Split(flag, " ")
+	if len(ss) > 1 {
+		param = append(param, ss[1:]...)
+	}
+
+	param = append(param, args...)
+
+	for k, v := range param {
+		param[k] = os.ExpandEnv(v)
+	}
+
+	return ss[0], param
 }
