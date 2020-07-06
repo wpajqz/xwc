@@ -23,9 +23,11 @@ func main() {
 	rootCmd.AddCommand(cmd.RunInitCommand())
 
 	c := &config.Config{}
-	if err := c.LoadConfigFile("xwc.yml"); err != nil {
-		fmt.Println(err.Error())
-		return
+	if c.IsExists("xwc.yml") {
+		if err := c.LoadConfigFile("xwc.yml"); err != nil {
+			fmt.Println(err.Error())
+			return
+		}
 	}
 
 	for _, element := range c.Enviroment {
